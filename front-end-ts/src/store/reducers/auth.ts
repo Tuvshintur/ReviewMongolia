@@ -1,24 +1,24 @@
 import { Action, ActionTypes } from '../actions';
 
-export interface AuthState {
+export interface AuthStoreState {
     userId: String;
     token: String;
     message: String;
     loading: Boolean;
 }
 
-const initState: AuthState = {
+const initState: AuthStoreState = {
     userId: '',
     token: '',
     message: '',
     loading: false,
 };
 
-const loginStart = (state: AuthState, action: Action) => {
+const loginStart = (state: AuthStoreState, action: Action) => {
     return updateObject(state, { loading: true });
 };
 
-const loginSuccess = (state: AuthState, action: Action) => {
+const loginSuccess = (state: AuthStoreState, action: Action) => {
     const { token, userId, message } = action.payload;
 
     return updateObject(state, {
@@ -29,19 +29,19 @@ const loginSuccess = (state: AuthState, action: Action) => {
     });
 };
 
-const loginFailed = (state: AuthState, action: Action) => {
+const loginFailed = (state: AuthStoreState, action: Action) => {
     const { message } = action.payload;
     return updateObject(state, { loading: false, message: message });
 };
 
-const updateObject = (oldObject: AuthState, updatedProperties: {}): AuthState => {
+const updateObject = (oldObject: AuthStoreState, updatedProperties: {}): AuthStoreState => {
     return {
         ...oldObject,
         ...updatedProperties,
     };
 };
 
-export const authReducer = (state: AuthState = initState, action: Action): AuthState => {
+export const authReducer = (state: AuthStoreState = initState, action: Action): AuthStoreState => {
     switch (+action.type) {
         case ActionTypes.loginStart:
             return loginStart(state, action);

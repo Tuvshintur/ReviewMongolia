@@ -1,34 +1,69 @@
 import axios from '../../utils/axios';
 import { Dispatch } from 'redux';
 import { ActionTypes, LoginInput } from '../actions';
-import { AuthState } from '../reducers/auth';
+import { AuthStoreState } from '../reducers/auth';
 
 export interface LoginStartAction {
     type: ActionTypes.loginStart;
-    payload: AuthState;
+    payload: AuthStoreState;
 }
 
 export interface LoginSuccessAction {
     type: ActionTypes.loginSuccess;
-    payload: AuthState;
+    payload: AuthStoreState;
 }
 
 export interface LoginFailedAction {
     type: ActionTypes.loginFailed;
-    payload: AuthState;
+    payload: AuthStoreState;
+}
+
+interface loginResponse {
+    data: {
+        login: AuthStoreState;
+    };
 }
 
 export const LoginUser = (loginInput: LoginInput) => {
     return async (dispatch: Dispatch) => {
-        const response = await axios.post<AuthState>('', loginInput, {
-            headers: {
-                'Content-type': 'application/json',
+        dispatch<LoginStartAction>({
+            type: ActionTypes.loginStart,
+            payload: {
+                userId: '',
+                token: '',
+                message: '',
+                loading: true,
             },
         });
+        try {
+            const graphqlQuery = JSON.stringify({
+                query: `{
+                    login(email:"${loginInput.username}", password:"${loginInput.password}") {
+                        token
+                        userId
+                    }
+                }`,
+            });
+            const response = await axios.post<loginResponse>('', graphqlQuery, {
+                headers: {
+                    'Content-type': 'application/json',
+                },
+            });
 
-        dispatch<LoginSuccessAction>({
-            type: ActionTypes.loginSuccess,
-            payload: response.data,
-        });
+            dispatch<LoginSuccessAction>({
+                type: ActionTypes.loginSuccess,
+                payload: response.data.data.login,
+            });
+        } catch (err) {
+            dispatch<LoginFailedAction>({
+                type: ActionTypes.loginFailed,
+                payload: {
+                    userId: '',
+                    token: '',
+                    message: err.message,
+                    loading: false,
+                },
+            });
+        }
     };
 };
